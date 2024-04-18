@@ -1,0 +1,76 @@
+%{
+
+#include "owl.tab.h"
+
+%}
+
+%option yylineno
+%option noyywrap
+
+delim [ /t/n]
+brancos {delim}+
+maiusculas [A-Z]
+minusculas [a-z]
+letra [A-Za-z]
+digito [0-9]
+numero {digito}+
+
+some "SOME"|"some"
+value "VALUE"|"value"
+only "ONLY"|"only"
+all "ALL"|"all"
+min "MIN"|"min"
+max "MAX"|"max"
+exactly "EXACTLY"|"exactly"
+that "THAT"|"that"
+not "NOT"|"not"
+and "AND"|"and"
+or "OR"|"or"
+inverse "INVERSE"|"inverse"
+
+integer "integer"
+namespaces ("owl"|"rdfs"|"xsd")":"({letra}+)
+operators (">"|"<"|">="|"<=")
+
+stringcomposta  {maiusculas}({letra})+
+id              {stringcomposta}("_"?{stringcomposta})*
+prop            "ssn"|("is"{stringcomposta}*"Of")|({minusculas}+({stringcomposta})*)
+individuo       {id}({numero}+)
+
+%%
+[\t\n]+ ;
+{some} |
+{only}       return QUANTIFIER;      
+{value} |      
+{all} |     
+{min} |
+{inverse} |        
+{max} | 
+{exactly} |    
+{that} |        
+{not} |
+{or} |          
+{and}         return KEYWORD;
+{id}          return CLASS;
+{prop}        return PROP;
+{numero}      return NUM;
+{operators}   return SYMBOL;
+"{"           return ABRE_CHAVE;
+"}"           return FECHA_CHAVE;
+"("           return ABRE_PARENTESES;
+")"           return FECHA_PARENTESES;
+"["           return ABRE_COLCHETES;
+"]"           return FECHA_COLCHETES;
+","           return VIRGULA;
+\"            return SYMBOL;
+{integer}     return TYPE;
+{namespaces}  return TYPE;
+{individuo}   return INDIVIDUAL;
+(Class:)      return KEYWORD_CLASS;
+(EquivalentTo:) return KEYWORD_EQUIVALENTTO;
+(SubClassOf:) return KEYWORD_SUBCLASSOF;
+(DisjointClasses:) return KEYWORD_DISJOINTCLASSES;
+(Individuals:) return KEYWORD_INDIVIDUALS;
+(DisjointWith:) return KEYWORD_DISJOINTCLASSES;
+
+%%
