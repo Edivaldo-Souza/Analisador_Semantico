@@ -51,17 +51,20 @@ body: keyword_subclass body_prop_subclassof
 	 | 
     ;
 
-body_prop_subclassof: body_prop {quant_primitiva++;}
-					| CLASS VIRGULA body_prop {quant_axioma_fechamento++;}
+body_prop_subclassof: props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class {quant_primitiva++;}
+					| CLASS VIRGULA fecha {quant_axioma_fechamento++;}
 					| CLASS {quant_aninhada++;}
 					;
 
 body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada++;}
-					  | CLASS KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES KEYWORD_INDIVIDUALS acept_individual {quant_definida++;}
-					  | CLASS KEYWORD ABRE_PARENTESES body_prop param FECHA_PARENTESES {quant_definida++;}
-					  | CLASS KEYWORD body_prop {quant_definida++;}
+					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES KEYWORD_INDIVIDUALS acept_individual {quant_definida++;}
+					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to param FECHA_PARENTESES {quant_definida++;}
+					  | CLASS KEYWORD props_equivalent_to {quant_definida++;}
 					  | class_or_class {quant_coberta++;}
-					  | CLASS KEYWORD aux {quant_aninhada++;}
+					  | CLASS aux {quant_aninhada++;}
 					  | class_or_class KEYWORD_SUBCLASSOF CLASS {quant_aninhada++;}
 					  ;
 
@@ -74,12 +77,31 @@ keyword_disjoint: KEYWORD_DISJOINTCLASSES
 keyword_individuals: KEYWORD_INDIVIDUALS
 ;
 
-aux: ABRE_PARENTESES body_prop FECHA_PARENTESES aux
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES aux
-	 | KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | PROP QUANTIFIER aux
-	 ;
+fecha: ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES
+	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES KEYWORD fecha
+	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES VIRGULA fecha
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA 
+	 PROP QUANTIFIER CLASS
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES KEYWORD fecha
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES
+	 | PROP KEYWORD NUM CLASS VIRGULA fecha
+	 | PROP KEYWORD NUM CLASS
+	 | PROP QUANTIFIER CLASS VIRGULA fecha
+	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES
+
+aux: KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES aux
+	| KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES
+	| ABRE_PARENTESES aux FECHA_PARENTESES aux
+	| PROP QUANTIFIER ABRE_PARENTESES PROP KEYWORD CLASS  FECHA_PARENTESES
+	| PROP QUANTIFIER CLASS
+	| PROP QUANTIFIER ABRE_PARENTESES class_or_class  FECHA_PARENTESES 
+	| PROP KEYWORD NUM CLASS
+	| KEYWORD PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES aux
+	| KEYWORD PROP QUANTIFIER CLASS aux
+	| KEYWORD PROP KEYWORD NUM CLASS
+	| KEYWORD PROP KEYWORD NUM CLASS aux
+	;
 
 class_or_class: CLASS KEYWORD class_or_class
 	 | CLASS
@@ -88,28 +110,16 @@ class_or_class: CLASS KEYWORD class_or_class
 param:  ABRE_COLCHETES SYMBOL NUM FECHA_COLCHETES
 	;
 
-body_prop: PROP KEYWORD CLASS VIRGULA body_prop
-	 | PROP KEYWORD TYPE
-	 | PROP KEYWORD CLASS
-	 | PROP KEYWORD NUM  CLASS	//Teste
-	 | PROP KEYWORD NUM  CLASS KEYWORD body_prop	//Teste
-	 | PROP KEYWORD NUM CLASS VIRGULA body_prop	//Teste
-	 | PROP KEYWORD ABRE_PARENTESES class_or_class FECHA_PARENTESES VIRGULA
-	 | PROP KEYWORD ABRE_PARENTESES class_or_class FECHA_PARENTESES
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop
-	 | PROP QUANTIFIER CLASS
-	 | PROP QUANTIFIER CLASS KEYWORD body_prop
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop keyword_disjoint acept_class
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop keyword_disjoint acept_class keyword_individuals acept_individual
-	 | PROP QUANTIFIER TYPE
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES KEYWORD body_prop
-	 | PROP QUANTIFIER body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES VIRGULA body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES KEYWORD body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | key_prop
+props_equivalent_to: PROP QUANTIFIER CLASS	//DEFINIDA
+	 | PROP QUANTIFIER TYPE			//DEFINIDA						
 	 ;
+
+props_subclass_of: PROP QUANTIFIER CLASS VIRGULA props_subclass_of
+	| PROP QUANTIFIER CLASS
+	| PROP QUANTIFIER TYPE
+	| PROP KEYWORD NUM CLASS
+	| key_prop
+	;
 
 key_prop: KEYWORD PROP QUANTIFIER CLASS VIRGULA key_prop
 	 | KEYWORD PROP QUANTIFIER CLASS
