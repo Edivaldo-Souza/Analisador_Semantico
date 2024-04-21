@@ -5,11 +5,6 @@ hasTopping some MozzarellaTopping,
 hasTopping some TomatoTopping,
 hasTopping only (MozzarellaTopping or TomatoTopping)
 
-EquivalentTo:
-Pizza and (hasTopping some CheeseTopping)
-Individuals:
-CheesyPizza1
-
 Class: Spiciness
 EquivalentTo: Hot or Medium or Mild
 

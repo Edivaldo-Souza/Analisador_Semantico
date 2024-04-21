@@ -882,7 +882,7 @@ YY_DECL
 		}
 
 	{
-#line 40 "owl.l"
+#line 41 "owl.l"
 
 #line 888 "lex.yy.c"
 
@@ -954,147 +954,147 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 41 "owl.l"
+#line 42 "owl.l"
 ;
 	YY_BREAK
 case 2:
-#line 43 "owl.l"
+#line 44 "owl.l"
 case 3:
 YY_RULE_SETUP
-#line 43 "owl.l"
+#line 44 "owl.l"
 return QUANTIFIER;      
 	YY_BREAK
 case 4:
-#line 45 "owl.l"
-case 5:
 #line 46 "owl.l"
-case 6:
+case 5:
 #line 47 "owl.l"
-case 7:
+case 6:
 #line 48 "owl.l"
-case 8:
+case 7:
 #line 49 "owl.l"
-case 9:
+case 8:
 #line 50 "owl.l"
-case 10:
+case 9:
 #line 51 "owl.l"
-case 11:
+case 10:
 #line 52 "owl.l"
-case 12:
+case 11:
 #line 53 "owl.l"
+case 12:
+#line 54 "owl.l"
 case 13:
 YY_RULE_SETUP
-#line 53 "owl.l"
+#line 54 "owl.l"
 return KEYWORD;
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 54 "owl.l"
+#line 55 "owl.l"
 return CLASS;
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 55 "owl.l"
+#line 56 "owl.l"
 return PROP;
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 56 "owl.l"
+#line 57 "owl.l"
 return NUM;
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 57 "owl.l"
+#line 59 "owl.l"
 return SYMBOL;
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 58 "owl.l"
+#line 60 "owl.l"
 return ABRE_CHAVE;
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 59 "owl.l"
+#line 61 "owl.l"
 return FECHA_CHAVE;
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 60 "owl.l"
+#line 62 "owl.l"
 return ABRE_PARENTESES;
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 61 "owl.l"
+#line 63 "owl.l"
 return FECHA_PARENTESES;
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 62 "owl.l"
+#line 64 "owl.l"
 return ABRE_COLCHETES;
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 63 "owl.l"
+#line 65 "owl.l"
 return FECHA_COLCHETES;
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 64 "owl.l"
+#line 66 "owl.l"
 return VIRGULA;
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 65 "owl.l"
+#line 67 "owl.l"
 return SYMBOL;
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 66 "owl.l"
+#line 68 "owl.l"
 return TYPE;
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 67 "owl.l"
+#line 69 "owl.l"
 return TYPE;
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 68 "owl.l"
+#line 70 "owl.l"
 return INDIVIDUAL;
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 69 "owl.l"
+#line 71 "owl.l"
 return KEYWORD_CLASS;
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 70 "owl.l"
+#line 72 "owl.l"
 return KEYWORD_EQUIVALENTTO;
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 71 "owl.l"
+#line 73 "owl.l"
 return KEYWORD_SUBCLASSOF;
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 72 "owl.l"
+#line 74 "owl.l"
 return KEYWORD_DISJOINTCLASSES;
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 73 "owl.l"
+#line 75 "owl.l"
 return KEYWORD_INDIVIDUALS;
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 74 "owl.l"
+#line 76 "owl.l"
 return KEYWORD_DISJOINTCLASSES;
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 76 "owl.l"
+#line 78 "owl.l"
 ECHO;
 	YY_BREAK
 #line 1101 "lex.yy.c"
@@ -2114,5 +2114,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 76 "owl.l"
+#line 78 "owl.l"
 

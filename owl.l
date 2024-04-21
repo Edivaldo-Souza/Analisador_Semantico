@@ -14,6 +14,7 @@ minusculas [a-z]
 letra [A-Za-z]
 digito [0-9]
 numero {digito}+
+numerofloat {numero}.{numero}*
 
 some "SOME"|"some"
 value "VALUE"|"value"
@@ -54,6 +55,7 @@ individuo       {id}({numero}+)
 {id}          return CLASS;
 {prop}        return PROP;
 {numero}      return NUM;
+
 {operators}   return SYMBOL;
 "{"           return ABRE_CHAVE;
 "}"           return FECHA_CHAVE;

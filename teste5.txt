@@ -1,0 +1,19 @@
+Class: DigitalAsset
+
+        
+    SubClassOf: 
+        Resource,
+        (composedBy exactly 1 Data) and (composedBy exactly 1 DataUsagePolicy),
+        historicallyDependsOn some OfferorUnconditionalAgreement
+    
+    
+Class: EconomicAgreement
+
+        
+    EquivalentTo: 
+        Relator
+         and ((composedBy some OffereeUnconditionalAgreement)
+         and (composedBy some OfferorUnconditionalAgreement))
+         and (historicallyDependsOn only EconomicOffering)
+         and (composedBy only (OffereeUnconditionalAgreement or OfferorUnconditionalAgreement))
+         and (historicallyDependsOn min 1 EconomicOffering)

@@ -15,7 +15,10 @@ int quant_axioma_fechamento = 0;
 int quant_aninhada = 0;
 int quant_coberta = 0;
 
-char* currentKeyWord;
+char* currentClass;
+char* currentKw;
+bool inClassScope = false;
+int kwLine;
 extern char* yytext;
 extern int yylineno;
 
@@ -26,60 +29,122 @@ extern int yylineno;
 %%
 
 stmnt: stmnt class
-	 | class
-	 //| error class {yyclearin;}		     
+	 | class    
 	 ;
 
-class: class keyword_class CLASS body
-	 | keyword_class CLASS body 
+class: class KEYWORD_CLASS class_name body
+	 | KEYWORD_CLASS class_name body
+	 | class error body
+	 | error body 
      ;
 
-keyword_class: KEYWORD_CLASS { 
-	currentKeyWord = yytext;
-	//cout << "\nCurrent kw: "<< clearString(currentKeyWord) << "\n";
+
+class_name: CLASS {
+		currentKw = new char[100];
+		currentClass = new char[strlen(yytext)+1]; 
+		strcpy(currentClass,yytext);
+		cout << "\nClass Atual: "<< currentClass << "\n";
 	}
+
 ;
 
 body: keyword_subclass body_prop_subclassof 
 	 | keyword_equivalent body_prop_equivalentto
-	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto {
-		
-		cout << "\n/---------------------------------------------------------------------------/\n";
-		cout << "Erro de semantica: SubClassOf antes de EquivalentTo. Linha "<< yylineno <<".\n";
-		cout << "/-----------------------------------------------------------------------------/\n";
-	 }
-	 | 
     ;
 
-body_prop_subclassof: body_prop {quant_primitiva++;}
-					| CLASS VIRGULA body_prop {quant_axioma_fechamento++;}
+body_prop_subclassof: props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of {quant_primitiva++;}
+					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class {quant_primitiva++;}
+					| CLASS VIRGULA fecha {quant_axioma_fechamento++;}
 					| CLASS {quant_aninhada++;}
 					;
 
 body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada++;}
-					  | CLASS KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES KEYWORD_INDIVIDUALS acept_individual {quant_definida++;}
-					  | CLASS KEYWORD ABRE_PARENTESES body_prop param FECHA_PARENTESES {quant_definida++;}
-					  | CLASS KEYWORD body_prop {quant_definida++;}
+					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES keyword_individuals acept_individual {cout << "Aqui\n";quant_definida++;}
+					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to param FECHA_PARENTESES {quant_definida++;}
+					  | CLASS KEYWORD props_equivalent_to {quant_definida++;}
 					  | class_or_class {quant_coberta++;}
-					  | CLASS KEYWORD aux {quant_aninhada++;}
+					  | CLASS aux {quant_aninhada++;}
 					  | class_or_class KEYWORD_SUBCLASSOF CLASS {quant_aninhada++;}
 					  ;
 
-keyword_equivalent: KEYWORD_EQUIVALENTTO 
+keyword_equivalent: KEYWORD_EQUIVALENTTO {
+	if(strcmp("SubClassOf:",currentKw)==0){
+		cout << "Erro de semantica: SubClassOf antes de EquivalentTo. Linha "<< kwLine <<".\n";
+	}
+	if(strcmp("DisjointClasses:",currentKw)==0){
+		cout << "Erro de semantica: DisjointClasses antes de EquivalentTo. Linha "<< kwLine <<".\n";
+	}
+	if(strcmp("Individuals:",currentKw)==0){
+		cout << "Erro de semantica: Individuals antes de EquivalentTo. Linha "<< kwLine <<".\n";
+	}
+	
+	
+	strcpy(currentKw,yytext);
+	kwLine = yylineno;
+	}
 ;
-keyword_subclass: KEYWORD_SUBCLASSOF
+keyword_subclass: KEYWORD_SUBCLASSOF {
+	if(strcmp("DisjointClasses:",currentKw)==0){
+		cout << "Erro de semantica: DisjointClasses antes de SubClassOf. Linha "<< kwLine <<".\n";
+	}
+	if(strcmp("Individuals:",currentKw)==0){
+		cout << "Erro de semantica: Individuals antes de SubClassOf. Linha "<< kwLine <<".\n";
+	}
+
+	
+	strcpy(currentKw,yytext);
+	kwLine = yylineno;
+	}
 ;
-keyword_disjoint: KEYWORD_DISJOINTCLASSES
+keyword_disjoint: KEYWORD_DISJOINTCLASSES {
+	if(strcmp("Class:",currentKw)==0){
+		cout << "Erro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
+	}
+	if(strcmp("Individuals:",currentKw)==0){
+		cout << "Erro de semantica: Individuals antes de DisjointClasses. Linha "<< kwLine <<".\n";
+	}
+	
+	strcpy(currentKw,yytext);
+	kwLine = yylineno;
+	}
 ;
-keyword_individuals: KEYWORD_INDIVIDUALS
+keyword_individuals: KEYWORD_INDIVIDUALS {
+	if(strcmp("Class:",currentKw)==0){
+		cout << "Erro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
+	}
+	
+	strcpy(currentKw,yytext);
+	kwLine = yylineno;
+	}
 ;
 
-aux: ABRE_PARENTESES body_prop FECHA_PARENTESES aux
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES aux
-	 | KEYWORD ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | PROP QUANTIFIER aux
-	 ;
+fecha: ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES
+	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES KEYWORD fecha
+	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES VIRGULA fecha
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA 
+	 PROP QUANTIFIER CLASS
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES KEYWORD fecha
+	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES
+	 | PROP KEYWORD NUM CLASS VIRGULA fecha
+	 | PROP KEYWORD NUM CLASS
+	 | PROP QUANTIFIER CLASS VIRGULA fecha
+	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES
+
+aux: KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES aux
+	| KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES
+	| ABRE_PARENTESES aux FECHA_PARENTESES aux
+	| PROP QUANTIFIER ABRE_PARENTESES PROP KEYWORD CLASS  FECHA_PARENTESES
+	| PROP QUANTIFIER CLASS
+	| PROP QUANTIFIER ABRE_PARENTESES class_or_class  FECHA_PARENTESES 
+	| PROP KEYWORD NUM CLASS
+	| KEYWORD PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES aux
+	| KEYWORD PROP QUANTIFIER CLASS aux
+	| KEYWORD PROP KEYWORD NUM CLASS
+	| KEYWORD PROP KEYWORD NUM CLASS aux
+	;
 
 class_or_class: CLASS KEYWORD class_or_class
 	 | CLASS
@@ -88,28 +153,16 @@ class_or_class: CLASS KEYWORD class_or_class
 param:  ABRE_COLCHETES SYMBOL NUM FECHA_COLCHETES
 	;
 
-body_prop: PROP KEYWORD CLASS VIRGULA body_prop
-	 | PROP KEYWORD TYPE
-	 | PROP KEYWORD CLASS
-	 | PROP KEYWORD NUM  CLASS	//Teste
-	 | PROP KEYWORD NUM  CLASS KEYWORD body_prop	//Teste
-	 | PROP KEYWORD NUM CLASS VIRGULA body_prop	//Teste
-	 | PROP KEYWORD ABRE_PARENTESES class_or_class FECHA_PARENTESES VIRGULA
-	 | PROP KEYWORD ABRE_PARENTESES class_or_class FECHA_PARENTESES
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop
-	 | PROP QUANTIFIER CLASS
-	 | PROP QUANTIFIER CLASS KEYWORD body_prop
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop keyword_disjoint acept_class
-	 | PROP QUANTIFIER CLASS VIRGULA body_prop keyword_disjoint acept_class keyword_individuals acept_individual
-	 | PROP QUANTIFIER TYPE
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES KEYWORD body_prop
-	 | PROP QUANTIFIER body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES VIRGULA body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES KEYWORD body_prop
-	 | ABRE_PARENTESES body_prop FECHA_PARENTESES
-	 | key_prop
+props_equivalent_to: PROP QUANTIFIER CLASS	//DEFINIDA
+	 | PROP QUANTIFIER TYPE			//DEFINIDA						
 	 ;
+
+props_subclass_of: PROP QUANTIFIER CLASS VIRGULA props_subclass_of
+	| PROP QUANTIFIER CLASS
+	| PROP QUANTIFIER TYPE
+	| PROP KEYWORD NUM CLASS
+	| key_prop
+	;
 
 key_prop: KEYWORD PROP QUANTIFIER CLASS VIRGULA key_prop
 	 | KEYWORD PROP QUANTIFIER CLASS
@@ -127,16 +180,6 @@ acept_individual: INDIVIDUAL VIRGULA acept_individual
 	 ;
 
 %%
-
-char* clearString(char* s){
-	char* d = s;
-    do {
-        while (*d == ' ') {
-            ++d;
-        }
-    } while (*s++ = *d++);
-	return d;
-}
 
 extern FILE * yyin;  
 
