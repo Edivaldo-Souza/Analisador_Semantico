@@ -1,4 +1,5 @@
 Class: MargheritaPizza
+
 SubClassOf:
 NamedPizza,
 hasTopping some MozzarellaTopping,
@@ -9,8 +10,10 @@ Class: Spiciness
 EquivalentTo: Hot or Medium or Mild
 
 Class: CheesyPizza
+
 EquivalentTo:
 Pizza and (hasTopping some CheeseTopping)
+
 Individuals:
 CheesyPizza1
 

@@ -1,2 +1,13 @@
-Class: Spiciness
-EquivalentTo: Hot or Medium or Mild
+Class: MargheritaPizza
+SubClassOf:
+NamedPizza,
+hasTopping only (MozzarellaTopping or TomatoTopping)
+hasTopping some MozzarellaTopping,
+hasTopping some TomatoTopping,
+
+DisjointClasses:
+AmericanaHotPizza, AmericanaPizza, SohoPizza
+
+Individuals:
+MargheritaPizza1,
+MargheritaPizza2

@@ -17,7 +17,8 @@ int quant_coberta = 0;
 
 char* currentClass;
 char* currentKw;
-bool inClassScope = false;
+char* currentProp; 
+bool classHasSortError = false;
 int kwLine;
 extern char* yytext;
 extern int yylineno;
@@ -28,9 +29,6 @@ extern int yylineno;
 
 %%
 
-stmnt: stmnt class
-	 | class    
-	 ;
 
 class: class KEYWORD_CLASS class_name body
 	 | KEYWORD_CLASS class_name body
@@ -41,8 +39,11 @@ class: class KEYWORD_CLASS class_name body
 
 class_name: CLASS {
 		currentKw = new char[100];
+		currentProp = new char[100];
 		currentClass = new char[strlen(yytext)+1]; 
 		strcpy(currentClass,yytext);
+		strcpy(currentKw,"Class:");
+		kwLine = yylineno;
 		cout << "\nClass Atual: "<< currentClass << "\n";
 	}
 
@@ -50,6 +51,19 @@ class_name: CLASS {
 
 body: keyword_subclass body_prop_subclassof 
 	 | keyword_equivalent body_prop_equivalentto
+	 | keyword_equivalent body_prop_equivalentto keyword_individuals acept_individual
+	 | keyword_subclass body_prop_subclassof keyword_disjoint acept_class keyword_individuals acept_individual
+	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto
+	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto keyword_individuals acept_individual
+	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto keyword_disjoint acept_class
+	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto keyword_disjoint acept_class keyword_individuals acept_individual
+	 | keyword_subclass body_prop_subclassof keyword_equivalent body_prop_equivalentto keyword_individuals acept_individual keyword_disjoint acept_class
+	 | keyword_individuals acept_individual keyword_subclass body_prop_subclassof
+	 | keyword_disjoint acept_class keyword_subclass body_prop_subclassof
+	 | keyword_individuals acept_individual keyword_equivalent body_prop_equivalentto
+	 | keyword_disjoint acept_class keyword_equivalent body_prop_equivalentto
+	 | keyword_individuals acept_individual
+	 | keyword_disjoint acept_class
     ;
 
 body_prop_subclassof: props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
@@ -61,7 +75,7 @@ body_prop_subclassof: props_subclass_of keyword_disjoint acept_class keyword_ind
 					;
 
 body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada++;}
-					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES keyword_individuals acept_individual {cout << "Aqui\n";quant_definida++;}
+					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES keyword_individuals acept_individual {quant_definida++;}
 					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to param FECHA_PARENTESES {quant_definida++;}
 					  | CLASS KEYWORD props_equivalent_to {quant_definida++;}
 					  | class_or_class {quant_coberta++;}
@@ -71,15 +85,14 @@ body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada
 
 keyword_equivalent: KEYWORD_EQUIVALENTTO {
 	if(strcmp("SubClassOf:",currentKw)==0){
-		cout << "Erro de semantica: SubClassOf antes de EquivalentTo. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: SubClassOf antes de EquivalentTo. Linha "<< kwLine <<".\n";
 	}
 	if(strcmp("DisjointClasses:",currentKw)==0){
-		cout << "Erro de semantica: DisjointClasses antes de EquivalentTo. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: DisjointClasses antes de EquivalentTo. Linha "<< kwLine <<".\n";
 	}
 	if(strcmp("Individuals:",currentKw)==0){
-		cout << "Erro de semantica: Individuals antes de EquivalentTo. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: Individuals antes de EquivalentTo. Linha "<< kwLine <<".\n";
 	}
-	
 	
 	strcpy(currentKw,yytext);
 	kwLine = yylineno;
@@ -87,10 +100,10 @@ keyword_equivalent: KEYWORD_EQUIVALENTTO {
 ;
 keyword_subclass: KEYWORD_SUBCLASSOF {
 	if(strcmp("DisjointClasses:",currentKw)==0){
-		cout << "Erro de semantica: DisjointClasses antes de SubClassOf. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: DisjointClasses antes de SubClassOf. Linha "<< kwLine <<".\n";
 	}
 	if(strcmp("Individuals:",currentKw)==0){
-		cout << "Erro de semantica: Individuals antes de SubClassOf. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: Individuals antes de SubClassOf. Linha "<< kwLine <<".\n";
 	}
 
 	
@@ -100,10 +113,10 @@ keyword_subclass: KEYWORD_SUBCLASSOF {
 ;
 keyword_disjoint: KEYWORD_DISJOINTCLASSES {
 	if(strcmp("Class:",currentKw)==0){
-		cout << "Erro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
 	}
 	if(strcmp("Individuals:",currentKw)==0){
-		cout << "Erro de semantica: Individuals antes de DisjointClasses. Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: Individuals antes de DisjointClasses. Linha "<< kwLine <<".\n";
 	}
 	
 	strcpy(currentKw,yytext);
@@ -112,7 +125,7 @@ keyword_disjoint: KEYWORD_DISJOINTCLASSES {
 ;
 keyword_individuals: KEYWORD_INDIVIDUALS {
 	if(strcmp("Class:",currentKw)==0){
-		cout << "Erro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
+		cout << "\nErro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo no escopo da Classe. Linha "<< kwLine <<".\n";
 	}
 	
 	strcpy(currentKw,yytext);
@@ -131,7 +144,16 @@ fecha: ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES
 	 | PROP KEYWORD NUM CLASS VIRGULA fecha
 	 | PROP KEYWORD NUM CLASS
 	 | PROP QUANTIFIER CLASS VIRGULA fecha
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES
+	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES //<----
+
+props_fecha: PROP {
+	strcpy(currentProp,yytext);
+	cout << "Propriedade Atual:" << currentProp << ".\n";
+}
+
+class_fecha: CLASS{
+
+}
 
 aux: KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES aux
 	| KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES
@@ -210,12 +232,6 @@ int main(int argc, char ** argv)
 	if(error_count<1){
 		cout << "Compilado com Sucesso\n";
 	}
-}
-
-void printText(){
-	extern char * yytext;
-
-	cout << "YYTEXT: " << yytext <<"\n";
 }
 
 void yyerror(const char * s)
