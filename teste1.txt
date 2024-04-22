@@ -1,0 +1,19 @@
+Class: Spiciness
+SubClassOf:
+hasBase some PizzaBase,
+hasCaloricContent some xsd:integer
+
+EquivalentTo:
+Pizza and (hasCaloricContent some xsd:integer[>= 400])
+
+Class: Pizza
+DisjointClasses:
+Pizza, PizzaBase, PizzaTopping
+
+Individuals:
+CustomPizza1,
+CustomPizza2
+
+SubClassOf:
+hasBase some PizzaBase,
+hasCaloricContent some xsd:integer

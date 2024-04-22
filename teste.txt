@@ -25,14 +25,14 @@ EquivalentTo: Hot or Medium or Mild
 
 Class: HighCaloriePizza
 EquivalentTo:
-Pizza and (hasCaloricContent some xsd:integer[>= 400])
+Pizza and (hasCaloricContent some xsd:integer[>= four])
 
 Class: Pizza
 SubClassOf:
 hasBase some PizzaBase,
 hasCaloricContent some xsd:integer
 DisjointClasses:
-Pizza, PizzaBase, PizzaTopping
+PizzaFi, PizzaBase, PizzaTopping
 Individuals:
 CustomPizza1,
 CustomPizza2

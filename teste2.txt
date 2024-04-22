@@ -3,6 +3,7 @@ SubClassOf:
 NamedPizza,
 hasTopping some MozzarellaTopping,
 hasTopping some TomatoTopping,
+hasTopping some TomatoToppingK,
 hasTopping only (MozzarellaTopping or TomatoTopping)
 
 DisjointClasses:
@@ -11,24 +12,3 @@ AmericanaHotPizza, AmericanaPizza, SohoPizza
 Individuals:
 MargheritaPizza1,
 MargheritaPizza2
-
-Class: HighCaloriePizza
-EquivalentTo:
-Pizza
-and (hasCaloricContent some xsd:float[>= 400.5])
-Class: LowCaloriePizza
-EquivalentTo:
-Pizza
-and (hasCaloricContent some xsd:integer[< 400])
-
-Class: InterestingPizza
-
-EquivalentTo:
-Pizza
-and (hasTopping max 3.4 PizzaTopping)
-
-Class: Employee
-
-SubClassOf:
-Person
-and (ssn min 5.4 xsd:string)
