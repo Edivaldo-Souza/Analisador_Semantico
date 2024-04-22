@@ -73,7 +73,8 @@ extern int yydebug;
     VIRGULA = 274,                 /* VIRGULA  */
     ABRE_PARENTESES = 275,         /* ABRE_PARENTESES  */
     FECHA_PARENTESES = 276,        /* FECHA_PARENTESES  */
-    QUANTIFIER = 277               /* QUANTIFIER  */
+    QUANTIFIER = 277,              /* QUANTIFIER  */
+    FLOAT = 278                    /* FLOAT  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif

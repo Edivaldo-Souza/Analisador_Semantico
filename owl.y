@@ -1,6 +1,7 @@
 %{
 #include <iostream>
 #include <cstring>
+#include <vector>
 using std::cout;
 
 int yylex(void);
@@ -17,34 +18,67 @@ int quant_coberta = 0;
 
 char* currentClass;
 char* currentKw;
-char* currentProp; 
-bool classHasSortError = false;
+char* currentProp;
+char* currentType;
+char* currentLesserKw; 
+std::vector<std::string> classesAxioma, dataPropertys, objPropertys;
+bool seekingProps, newClass, checkingClasses, semanticErrorFound, keepType = false;
 int kwLine;
 extern char* yytext;
 extern int yylineno;
 
 %}
 
-%token CLASS KEYWORD PROP NUM SYMBOL TYPE INDIVIDUAL KEYWORD_CLASS KEYWORD_EQUIVALENTTO KEYWORD_SUBCLASSOF KEYWORD_DISJOINTCLASSES KEYWORD_INDIVIDUALS ABRE_CHAVE FECHA_CHAVE ABRE_COLCHETES FECHA_COLCHETES VIRGULA ABRE_PARENTESES FECHA_PARENTESES QUANTIFIER
+%token CLASS KEYWORD PROP NUM SYMBOL TYPE INDIVIDUAL KEYWORD_CLASS KEYWORD_EQUIVALENTTO KEYWORD_SUBCLASSOF KEYWORD_DISJOINTCLASSES KEYWORD_INDIVIDUALS ABRE_CHAVE FECHA_CHAVE ABRE_COLCHETES FECHA_COLCHETES VIRGULA ABRE_PARENTESES FECHA_PARENTESES QUANTIFIER FLOAT
 
 %%
 
 
-class: class KEYWORD_CLASS class_name body
-	 | KEYWORD_CLASS class_name body
+class: class keyword_class class_name body
+	 | keyword_class class_name body
 	 | class error body
 	 | error body 
      ;
 
+keyword_class: KEYWORD_CLASS{
+	newClass = true;
+	checkingClasses = false;
+}
 
 class_name: CLASS {
-		currentKw = new char[100];
-		currentProp = new char[100];
-		currentClass = new char[strlen(yytext)+1]; 
-		strcpy(currentClass,yytext);
-		strcpy(currentKw,"Class:");
-		kwLine = yylineno;
-		cout << "\nClass Atual: "<< currentClass << "\n";
+		if(newClass){
+			semanticErrorFound = false;
+			currentKw = new char[100];
+			currentProp = new char[100];
+			currentType = new char[100];
+			currentLesserKw = new char[100];
+			currentClass = new char[strlen(yytext)+1]; 
+			strcpy(currentClass,yytext);
+			strcpy(currentKw,"Class:");
+			kwLine = yylineno;
+			cout << "\nClass Atual: "<< currentClass << "\n";
+			newClass = false;
+		}
+		if(seekingProps){
+			std::string cl(yytext);
+			classesAxioma.push_back(cl);
+		}
+		if(checkingClasses){
+			std::string ctClass(yytext);
+			
+			bool hasClass = false;
+			for(int i = 0; i<classesAxioma.size(); i++){
+				if(strcmp(classesAxioma[i].c_str(),yytext)==0){
+					hasClass = true;
+				}
+			}
+			if(!hasClass){
+				cout << "\nErro Semantico: Classe: "<< ctClass <<" não declarada no axioma de fechamento. Linha "<< kwLine <<"\n";
+				semanticErrorFound = true;
+				checkingClasses = false;
+			}
+		}
+		
 	}
 
 ;
@@ -67,23 +101,26 @@ body: keyword_subclass body_prop_subclassof
     ;
 
 body_prop_subclassof: props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
-					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
-					| CLASS VIRGULA props_subclass_of {quant_primitiva++;}
-					| CLASS VIRGULA props_subclass_of keyword_disjoint acept_class {quant_primitiva++;}
-					| CLASS VIRGULA fecha {quant_axioma_fechamento++;}
-					| CLASS {quant_aninhada++;}
+					| class_name VIRGULA props_subclass_of keyword_disjoint acept_class keyword_individuals acept_individual {quant_primitiva++;}
+					| class_name VIRGULA props_subclass_of {quant_primitiva++;}
+					| class_name VIRGULA props_subclass_of keyword_disjoint acept_class {quant_primitiva++;}
+					| class_name VIRGULA fecha {quant_axioma_fechamento++;}
+					| class_name {quant_aninhada++;}
+					| class_name aux{quant_aninhada++;}
 					;
+			
 
 body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada++;}
-					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES keyword_individuals acept_individual {quant_definida++;}
-					  | CLASS KEYWORD ABRE_PARENTESES props_equivalent_to param FECHA_PARENTESES {quant_definida++;}
-					  | CLASS KEYWORD props_equivalent_to {quant_definida++;}
+					  | class_name keyword ABRE_PARENTESES props_equivalent_to FECHA_PARENTESES keyword_individuals acept_individual {quant_definida++;}
+					  | class_name keyword ABRE_PARENTESES props_equivalent_to param FECHA_PARENTESES {quant_definida++;}
+					  | class_name keyword props_equivalent_to {quant_definida++;}
 					  | class_or_class {quant_coberta++;}
-					  | CLASS aux {quant_aninhada++;}
-					  | class_or_class KEYWORD_SUBCLASSOF CLASS {quant_aninhada++;}
+					  | class_name aux {quant_aninhada++;}
+					  | class_or_class KEYWORD_SUBCLASSOF class_name {quant_aninhada++;}
 					  ;
 
 keyword_equivalent: KEYWORD_EQUIVALENTTO {
+	checkingClasses = false;
 	if(strcmp("SubClassOf:",currentKw)==0){
 		cout << "\nErro de semantica: SubClassOf antes de EquivalentTo. Linha "<< kwLine <<".\n";
 	}
@@ -99,6 +136,7 @@ keyword_equivalent: KEYWORD_EQUIVALENTTO {
 	}
 ;
 keyword_subclass: KEYWORD_SUBCLASSOF {
+	seekingProps = true;
 	if(strcmp("DisjointClasses:",currentKw)==0){
 		cout << "\nErro de semantica: DisjointClasses antes de SubClassOf. Linha "<< kwLine <<".\n";
 	}
@@ -112,6 +150,7 @@ keyword_subclass: KEYWORD_SUBCLASSOF {
 	}
 ;
 keyword_disjoint: KEYWORD_DISJOINTCLASSES {
+	checkingClasses = false;
 	if(strcmp("Class:",currentKw)==0){
 		cout << "\nErro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo . Linha "<< kwLine <<".\n";
 	}
@@ -124,6 +163,7 @@ keyword_disjoint: KEYWORD_DISJOINTCLASSES {
 	}
 ;
 keyword_individuals: KEYWORD_INDIVIDUALS {
+	checkingClasses = false;
 	if(strcmp("Class:",currentKw)==0){
 		cout << "\nErro de semantica: Ausencia dos termos obrigatorios SubClassOf/EquivalentTo no escopo da Classe. Linha "<< kwLine <<".\n";
 	}
@@ -133,68 +173,90 @@ keyword_individuals: KEYWORD_INDIVIDUALS {
 	}
 ;
 
-fecha: ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES
-	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES KEYWORD fecha
-	 | ABRE_PARENTESES PROP QUANTIFIER CLASS FECHA_PARENTESES VIRGULA fecha
-	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA
-	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES VIRGULA 
-	 PROP QUANTIFIER CLASS
-	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES KEYWORD fecha
-	 | ABRE_PARENTESES PROP KEYWORD NUM CLASS FECHA_PARENTESES
-	 | PROP KEYWORD NUM CLASS VIRGULA fecha
-	 | PROP KEYWORD NUM CLASS
-	 | PROP QUANTIFIER CLASS VIRGULA fecha
-	 | PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES //<----
+fecha: ABRE_PARENTESES PROP QUANTIFIER class_name FECHA_PARENTESES
+	 | ABRE_PARENTESES PROP QUANTIFIER class_name FECHA_PARENTESES keyword fecha
+	 | ABRE_PARENTESES PROP QUANTIFIER class_name FECHA_PARENTESES VIRGULA fecha
+	 | ABRE_PARENTESES PROP keyword number class_name FECHA_PARENTESES VIRGULA
+	 | ABRE_PARENTESES PROP keyword number class_name FECHA_PARENTESES VIRGULA 
+	 PROP QUANTIFIER class_name
+	 | ABRE_PARENTESES PROP keyword number class_name FECHA_PARENTESES keyword fecha
+	 | ABRE_PARENTESES PROP keyword number class_name FECHA_PARENTESES
+	 | PROP keyword number class_name VIRGULA fecha
+	 | PROP keyword number class_name
+	 | PROP QUANTIFIER class_name VIRGULA fecha
+	 | PROP axioma_quantifier ABRE_PARENTESES class_or_class FECHA_PARENTESES 
 
-props_fecha: PROP {
-	strcpy(currentProp,yytext);
-	cout << "Propriedade Atual:" << currentProp << ".\n";
-}
+axioma_quantifier: QUANTIFIER {kwLine = yylineno; seekingProps=false;checkingClasses=true;}
+;
 
-class_fecha: CLASS{
-
-}
-
-aux: KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES aux
-	| KEYWORD ABRE_PARENTESES aux FECHA_PARENTESES
+aux: keyword ABRE_PARENTESES aux FECHA_PARENTESES aux
+	| keyword ABRE_PARENTESES aux FECHA_PARENTESES
 	| ABRE_PARENTESES aux FECHA_PARENTESES aux
-	| PROP QUANTIFIER ABRE_PARENTESES PROP KEYWORD CLASS  FECHA_PARENTESES
-	| PROP QUANTIFIER CLASS
+	| PROP QUANTIFIER ABRE_PARENTESES PROP keyword class_name  FECHA_PARENTESES
+	| PROP QUANTIFIER class_name
 	| PROP QUANTIFIER ABRE_PARENTESES class_or_class  FECHA_PARENTESES 
-	| PROP KEYWORD NUM CLASS
-	| KEYWORD PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES aux
-	| KEYWORD PROP QUANTIFIER CLASS aux
-	| KEYWORD PROP KEYWORD NUM CLASS
-	| KEYWORD PROP KEYWORD NUM CLASS aux
+	| PROP keyword number class_name
+	| PROP keyword number type
+	| keyword PROP QUANTIFIER ABRE_PARENTESES class_or_class FECHA_PARENTESES aux
+	| keyword PROP QUANTIFIER class_name aux
+	| keyword PROP keyword number class_name
+	| keyword PROP keyword number class_name aux
 	;
 
-class_or_class: CLASS KEYWORD class_or_class
-	 | CLASS
+class_or_class: class_name keyword class_or_class
+	 | class_name
 	 ;
 
-param:  ABRE_COLCHETES SYMBOL NUM FECHA_COLCHETES
+param:  ABRE_COLCHETES SYMBOL number FECHA_COLCHETES
 	;
 
-props_equivalent_to: PROP QUANTIFIER CLASS	//DEFINIDA
-	 | PROP QUANTIFIER TYPE			//DEFINIDA						
+props_equivalent_to: PROP QUANTIFIER class_name	//DEFINIDA
+	 | PROP QUANTIFIER type	 //DEFINIDA						
 	 ;
 
-props_subclass_of: PROP QUANTIFIER CLASS VIRGULA props_subclass_of
-	| PROP QUANTIFIER CLASS
-	| PROP QUANTIFIER TYPE
-	| PROP KEYWORD NUM CLASS
+number: NUM {
+	if(strcmp(currentType,"xsd:float")==0 ){
+		cout << "\nErro Semantico: O valor esperado era do tipo xsd:float. Linha "<< yylineno <<"\n";
+	}
+	}
+	 | FLOAT{
+		if(strcmp(currentType,"xsd:integer")==0 ){
+		cout << "\nErro Semantico: O valor esperado era do tipo xsd:integer. Linha "<< yylineno <<"\n";
+		}
+		if(strcmp(currentLesserKw,"min")==0 ||
+			strcmp(currentLesserKw,"max")==0 ||
+			strcmp(currentLesserKw,"exactly")==0){
+				cout << "\nErro Semantico: Apos o operador "<< currentLesserKw<<" espera-se cardinalidade do tipo xsd:integer. Linha "<< yylineno <<"\n";
+			}
+	}
+	;
+
+type: TYPE {
+	strcpy(currentType,yytext);
+}
+
+keyword: KEYWORD {
+	strcpy(currentLesserKw,yytext);
+
+}
+
+props_subclass_of: PROP QUANTIFIER class_name VIRGULA props_subclass_of
+	| PROP QUANTIFIER class_name
+	| PROP QUANTIFIER type
+	| PROP keyword number class_name
 	| key_prop
 	;
+ 
 
-key_prop: KEYWORD PROP QUANTIFIER CLASS VIRGULA key_prop
-	 | KEYWORD PROP QUANTIFIER CLASS
-	 | KEYWORD PROP KEYWORD NUM CLASS 
-	 | KEYWORD PROP KEYWORD NUM CLASS key_prop
-	 | KEYWORD PROP KEYWORD NUM CLASS VIRGULA key_prop
+key_prop: keyword PROP QUANTIFIER class_name VIRGULA key_prop
+	 | keyword PROP QUANTIFIER class_name
+	 | keyword PROP keyword number class_name 
+	 | keyword PROP keyword number class_name key_prop
+	 | keyword PROP keyword number class_name VIRGULA key_prop
 	 ;
 
-acept_class: CLASS VIRGULA acept_class
-	 | CLASS
+acept_class: class_name VIRGULA acept_class
+	 | class_name
 	 ;
 
 acept_individual: INDIVIDUAL VIRGULA acept_individual
@@ -239,8 +301,10 @@ void yyerror(const char * s)
 	extern int yylineno;    
 	extern char * yytext;   
 
-	error_count++;
-	cout << "\n";
-    cout << "Erro de Sintaxe: *"<< yytext <<"*, linha " << yylineno << "\n";
+	if(!semanticErrorFound){
+		error_count++;
+		cout << "\n";
+    	cout << "Erro de Sintaxe: *"<< yytext <<"*, linha " << yylineno << "\n";
+	}
 	
 }
