@@ -1377,7 +1377,7 @@ yyreduce:
 		std::string prop1(currentProp);
 		if(!inDisjoint){
 			if(count(dataPropertys.begin(),dataPropertys.end(),prop1)>0){
-				cout << "\nErro Semantico: Tentativa de atribuicao de objeto a DataPropety "<<currentProp<<". Linha "<< yylineno <<"\n";
+				cout << "\nErro de semantica: Tentativa de atribuicao de objeto a DataProperty "<<currentProp<<". Linha "<< yylineno <<"\n";
 				currentProp = new char[100];
 				semanticErrorFound = true;
 				semantic_error_count++;
@@ -1571,7 +1571,7 @@ yyreduce:
 #line 274 "owl.y"
                                                                                        {
 		if(contClasses>0){
-			cout << "\nErro de semantica: Ausencia classes declaradas no axioma de fechamento. Linha "<< kwLine <<"\n";
+			cout << "\nErro de semantica: Ausencia de classes declaradas no axioma de fechamento. Linha "<< kwLine <<"\n";
 			semantic_error_count++;
 			semanticErrorFound = true;
 			checkingClasses = false;
@@ -1597,7 +1597,7 @@ yyreduce:
 #line 319 "owl.y"
             {
 	if(strcmp(currentType,"xsd:float")==0 ){
-		cout << "\nErro Semantico: O valor esperado era do tipo xsd:float. Linha "<< yylineno <<"\n";
+		cout << "\nErro de semantica: O valor esperado era do tipo xsd:float. Linha "<< yylineno <<"\n";
 		semanticErrorFound = true;
 		semantic_error_count++;
 
@@ -1610,14 +1610,14 @@ yyreduce:
 #line 327 "owl.y"
                 {
 		if(strcmp(currentType,"xsd:integer")==0 ){
-		cout << "\nErro Semantico: O valor esperado era do tipo xsd:integer. Linha "<< yylineno <<"\n";
+		cout << "\nErro de semantica: O valor esperado era do tipo xsd:integer. Linha "<< yylineno <<"\n";
 		semanticErrorFound = true;
 		semantic_error_count++;
 		}
 		if(strcmp(currentLesserKw,"min")==0 ||
 			strcmp(currentLesserKw,"max")==0 ||
 			strcmp(currentLesserKw,"exactly")==0){
-				cout << "\nErro Semantico: Apos o operador "<< currentLesserKw<<" espera-se cardinalidade do tipo xsd:integer. Linha "<< yylineno <<"\n";
+				cout << "\nErro de semantica: Apos o operador "<< currentLesserKw<<" espera-se cardinalidade do tipo xsd:integer. Linha "<< yylineno <<"\n";
 				semanticErrorFound = true;
 				semantic_error_count++;
 			}
@@ -1628,7 +1628,7 @@ yyreduce:
   case 74: /* number: PROP  */
 #line 341 "owl.y"
               {
-		cout << "\nErro Semantico: O valor esperado era do tipo xsd:integer. Linha "<< yylineno <<"\n";
+		cout << "\nErro de semantica: O valor esperado era do tipo xsd:integer. Linha "<< yylineno <<"\n";
 		semanticErrorFound = true;
 		semantic_error_count++;
 	}
@@ -1642,7 +1642,7 @@ yyreduce:
 	std::string prop1(currentProp);
 	if(!inDisjoint){
 		if(count(objPropertys.begin(),objPropertys.end(),prop1)>0){
-		cout << "\nErro Semantico: Tentativa de atribuicao de tipo a ObjectPropety "<<currentProp<<". Linha "<< yylineno <<"\n";
+		cout << "\nErro de semantica: Tentativa de atribuicao de tipo a ObjectProperty "<<currentProp<<". Linha "<< yylineno <<"\n";
 		currentProp = new char[100];
 		semanticErrorFound = true;
 		semantic_error_count++;
