@@ -11,8 +11,8 @@ Arquivos: teste1.txt e teste2.txt
 # Teste de Coerção
 Arquivo: teste3.txt
 
-* A avaliação do sobrecarregamento é feita em todos os testes anteriores 
-
+# Teste de Sobrecarregamento
+Arquivo: teste4.txt
 
 # Testes Adicionais
-Arquivos: teste.txt, teste4.txt e teste5.txt
+Arquivos: teste5.txt

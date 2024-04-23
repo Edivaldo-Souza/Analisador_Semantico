@@ -29,6 +29,7 @@ std::unordered_map<std::string,std::vector<std::string>> propsAxioma;
 std::vector<std::string> classesAxioma, dataPropertys, objPropertys;
 bool seekingProps, newClass, checkingClasses, semanticErrorFound, keepType, canVerifyProp, inDisjoint = false;
 int kwLine;
+int contClasses;
 extern char* yytext;
 extern int yylineno;
 
@@ -50,6 +51,7 @@ keyword_class: KEYWORD_CLASS{
 	checkingClasses = false;
 	canVerifyProp = false;
 	inDisjoint = false;
+	contClasses = 0;
 	
 }
 prop_name: PROP {
@@ -107,6 +109,7 @@ class_name: CLASS {
 				bool hasClass = false;
 			for(int i = 0; i<classesAxioma.size(); i++){
 				if(strcmp(classesAxioma[i].c_str(),yytext)==0){
+					contClasses--;
 					hasClass = true;
 				}
 			}
@@ -117,6 +120,7 @@ class_name: CLASS {
 				checkingClasses = false;
 			}
 			}
+
 		}
 
 		if(inDisjoint){
@@ -125,6 +129,17 @@ class_name: CLASS {
 				semantic_error_count++;
 			}
 		}
+
+		std::string prop1(currentProp);
+		if(!inDisjoint){
+			if(count(dataPropertys.begin(),dataPropertys.end(),prop1)>0){
+				cout << "\nErro Semantico: Tentativa de atribuicao de objeto a DataPropety "<<currentProp<<". Linha "<< yylineno <<"\n";
+				currentProp = new char[100];
+				semanticErrorFound = true;
+				semantic_error_count++;
+			}
+		}
+		
 
 		std::string prop(currentProp);
 		int quant = count(objPropertys.begin(),objPropertys.end(),prop);
@@ -175,6 +190,7 @@ body_prop_equivalentto: ABRE_CHAVE acept_individual FECHA_CHAVE {quant_enumerada
 
 keyword_equivalent: KEYWORD_EQUIVALENTTO {
 	checkingClasses = false;
+	currentProp = new char[100];
 	if(strcmp("SubClassOf:",currentKw)==0){
 		cout << "\nErro de semantica: SubClassOf antes de EquivalentTo. Linha "<< kwLine <<".\n";
 		semanticErrorFound = true;
@@ -255,14 +271,22 @@ fecha: ABRE_PARENTESES prop_name QUANTIFIER class_name FECHA_PARENTESES
 	 | prop_name keyword number class_name VIRGULA fecha
 	 | prop_name keyword number class_name
 	 | prop_name QUANTIFIER class_name VIRGULA fecha
-	 | prop_name axioma_quantifier ABRE_PARENTESES class_or_class FECHA_PARENTESES 
+	 | prop_name axioma_quantifier ABRE_PARENTESES class_or_class FECHA_PARENTESES {
+		if(contClasses>0){
+			cout << "\nErro de semantica: Ausencia classes declaradas no axioma de fechamento. Linha "<< kwLine <<"\n";
+			semantic_error_count++;
+			semanticErrorFound = true;
+			checkingClasses = false;
+	 }}
 
 axioma_quantifier: QUANTIFIER {
 	kwLine = yylineno; 
 	seekingProps=false;
 	checkingClasses=true;
 
-	strcpy(chosenProp,currentProp);	
+	strcpy(chosenProp,currentProp);
+	std::string prop(chosenProp);
+	contClasses = propsAxioma[prop].size();	
 	}
 ;
 
@@ -270,6 +294,7 @@ aux: keyword ABRE_PARENTESES aux FECHA_PARENTESES aux
 	| keyword ABRE_PARENTESES aux FECHA_PARENTESES
 	| ABRE_PARENTESES aux FECHA_PARENTESES aux
 	| prop_name QUANTIFIER ABRE_PARENTESES prop_name keyword class_name  FECHA_PARENTESES
+	| prop_name QUANTIFIER type
 	| prop_name QUANTIFIER class_name
 	| prop_name QUANTIFIER ABRE_PARENTESES class_or_class  FECHA_PARENTESES 
 	| prop_name keyword number class_name
@@ -322,6 +347,16 @@ number: NUM {
 
 type: TYPE {
 	strcpy(currentType,yytext);
+	std::string prop1(currentProp);
+	if(!inDisjoint){
+		if(count(objPropertys.begin(),objPropertys.end(),prop1)>0){
+		cout << "\nErro Semantico: Tentativa de atribuicao de tipo a ObjectPropety "<<currentProp<<". Linha "<< yylineno <<"\n";
+		currentProp = new char[100];
+		semanticErrorFound = true;
+		semantic_error_count++;
+	}
+	}
+	
 
 	std::string prop(currentProp);
 		int quant = count(dataPropertys.begin(),dataPropertys.end(),prop);
@@ -395,14 +430,14 @@ int main(int argc, char ** argv)
 	}
 	cout << "Total de ObjectProperties: " << objPropertys.size() << ".\n\n";
 
-	cout << "Classes Primitivas: \t" << quant_primitiva << "\n";
-	cout << "Classes Definidas: \t" << quant_definida << "\n";
-	cout << "Classes Enumeradas: \t" << quant_enumerada << "\n";
-	cout << "Classes Coberta: \t" << quant_coberta << "\n";
-	cout << "Classes com \nAxioma de Fechamento: \t" << quant_axioma_fechamento << "\n";
-	cout << "Classes Aninhadas: \t" << quant_aninhada << "\n";
 	if(error_count<1 && semantic_error_count<1){
 		cout << "Compilado com Sucesso\n";
+		cout << "Classes Primitivas: \t" << quant_primitiva << "\n";
+		cout << "Classes Definidas: \t" << quant_definida << "\n";
+		cout << "Classes Enumeradas: \t" << quant_enumerada << "\n";
+		cout << "Classes Coberta: \t" << quant_coberta << "\n";
+		cout << "Classes com \nAxioma de Fechamento: \t" << quant_axioma_fechamento << "\n";
+		cout << "Classes Aninhadas: \t" << quant_aninhada << "\n";
 	}
 	else cout << "Compilacao Falhou\n";
 }

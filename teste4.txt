@@ -1,8 +1,14 @@
-Class: RegulatoryActivity
-EquivalentTo: ValueActivity
-and ((bundles some
-        (CnAObject or CoreObject or PoPObject)) or
-        (consumes some CounterObject))
-and ((grants some CnAObject) or
-    (transfer some
-        (CoreObject or PoPObject)))
+Class: Customer
+EquivalentTo:
+Person
+and (purchasedPizza some Pizza)
+and (hasPhone some xsd:string)
+and (hasPhone some Phone)
+
+Class: CalabresaPizza
+SubClassOf:
+NamedPizza,
+hasTopping some CalabresaTopping,
+hasTopping some TomatoTopping,
+hasTopping some xsd:integer,
+hasTopping only (CalabresaTopping or TomatoTopping)
