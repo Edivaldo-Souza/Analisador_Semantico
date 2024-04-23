@@ -3,8 +3,7 @@ SubClassOf:
 NamedPizza,
 hasTopping some MozzarellaTopping,
 hasTopping some TomatoTopping,
-hasTopping some TomatoToppingK,
-hasTopping only (MozzarellaTopping or TomatoTopping)
+hasTopping only (Mozzarella or TomatoTopping)
 
 DisjointClasses:
 AmericanaHotPizza, AmericanaPizza, SohoPizza
@@ -12,3 +11,11 @@ AmericanaHotPizza, AmericanaPizza, SohoPizza
 Individuals:
 MargheritaPizza1,
 MargheritaPizza2
+
+Class: Pizza
+SubClassOf:
+NamedPizza,
+hasBase only (PizzaBase or MozzarelaBase),
+hasBase some PizzaBase,
+hasBase some MozzarelaBase;
+hasCaloricContent some xsd:integer

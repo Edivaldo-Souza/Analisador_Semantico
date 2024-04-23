@@ -1337,7 +1337,7 @@ yyreduce:
 			std::string ctClass(yytext);
 			
 			std::string prop(chosenProp);
-			int cont;
+			
 			if(propsAxioma.count(prop)==0){
 				cout << "\nErro de semantica: Propriedade não declarada no axioma de fechamento. Linha "<< kwLine <<"\n";
 				semantic_error_count++;
@@ -1346,7 +1346,7 @@ yyreduce:
 			}
 			else{
 				classesAxioma = propsAxioma[prop];
-				cont = classesAxioma.size();
+				
 				bool hasClass = false;
 			for(int i = 0; i<classesAxioma.size(); i++){
 				if(strcmp(classesAxioma[i].c_str(),yytext)==0){
