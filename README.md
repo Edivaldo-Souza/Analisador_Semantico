@@ -1,4 +1,4 @@
-# Instruções para executar o analisador sintático
+# Instruções para executar o Analisador Semântico
 
 Execute os seguintes comandos em ordem para utilizar o analisador
     
