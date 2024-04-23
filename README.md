@@ -15,4 +15,4 @@ Arquivo: teste3.txt
 
 
 # Testes Adicionais
-Arquivos: teste4.txt e teste5.txt
+Arquivos: teste.txt, teste4.txt e teste5.txt

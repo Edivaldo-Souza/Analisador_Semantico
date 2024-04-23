@@ -20,12 +20,9 @@ CheesyPizza1
 Class: Spiciness
 EquivalentTo: {Hot1 , Medium1 , Mild1}
 
-Class: Spiciness
-EquivalentTo: Hot or Medium or Mild
-
 Class: HighCaloriePizza
 EquivalentTo:
-Pizza and (hasCaloricContent some xsd:integer[>= four])
+Pizza and (hasCaloricContent some xsd:integer[>= 400])
 
 Class: Pizza
 SubClassOf:
